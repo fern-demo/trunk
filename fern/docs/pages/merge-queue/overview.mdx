@@ -1,0 +1,43 @@
+---
+title: Merge Queue Overview
+subtitle: Merge PRs faster with parallel testing
+slug: merge-queue/overview
+---
+
+Trunk Merge Queue is a smart merge queue that parallelizes CI testing for non-overlapping pull requests, dramatically reducing the time it takes to land code on your main branch.
+
+## How It Works
+
+Traditional merge queues test and merge pull requests one at a time. If you have 10 PRs in the queue and each takes 30 minutes to test, the last PR won't merge for 5 hours.
+
+Trunk Merge Queue solves this by:
+
+1. **Analyzing impacted targets** — Determining which parts of the codebase each PR touches
+2. **Parallel testing** — Running tests for non-overlapping PRs simultaneously
+3. **Automatic merging** — Merging PRs as soon as their tests pass
+
+## Key Features
+
+- **Parallel queues** — Test non-overlapping changes simultaneously using impacted targets
+- **Priority levels** — Set custom priority levels for urgent PRs
+- **Skip the line** — Allow critical fixes to bypass the queue
+- **Automatic retries** — Retry flaky test failures automatically
+- **GitHub integration** — Works seamlessly with GitHub pull requests
+- **Slack notifications** — Get notified when your PRs merge or fail
+- **Webhooks** — Build custom integrations with webhook events
+
+## Supported Build Systems
+
+Trunk has native integrations for determining impacted targets with:
+
+- **Bazel** — Automatic target detection
+- **Nx** — Monorepo-aware target detection
+- **Gradle** — Module-level impact analysis
+- **Custom** — Use the API to set impacted targets for any build system
+
+## Quick Start
+
+1. Install the [Trunk GitHub App](https://app.trunk.io)
+2. Enable Merge Queue for your repository
+3. Configure your target branch (typically `main`)
+4. Start submitting PRs to the queue via GitHub comments or the API

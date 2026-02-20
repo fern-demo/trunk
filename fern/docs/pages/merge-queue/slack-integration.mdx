@@ -1,0 +1,25 @@
+---
+title: Slack Integration
+subtitle: Get merge queue notifications in Slack
+slug: merge-queue/slack-integration
+---
+
+Connect Trunk to Slack to receive notifications when pull requests are merged, fail tests, or need attention.
+
+## Setup
+
+1. Navigate to your organization settings in the [Trunk App](https://app.trunk.io)
+2. Go to **Integrations** > **Slack**
+3. Click **Connect to Slack** and authorize the Trunk Slack app
+4. Select the channel where you want to receive notifications
+
+## Notification Types
+
+- **PR merged** — When a pull request is successfully merged via the queue
+- **PR failed** — When tests fail for a queued pull request
+- **Queue paused** — When the merge queue is paused (e.g., due to repeated failures)
+- **Queue resumed** — When the merge queue is resumed
+
+## Customization
+
+You can configure which events trigger Slack notifications on a per-repository basis in the Trunk App settings.

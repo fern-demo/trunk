@@ -1,0 +1,49 @@
+---
+title: Code Quality CLI
+subtitle: One tool to run all your linters, formatters, and analyzers
+slug: code-quality/overview
+---
+
+The Trunk Code Quality CLI (formerly Trunk Check) is a universal linting and formatting tool that runs 100+ linters and formatters with a single command.
+
+## Key Features
+
+- **100+ tools supported** — ESLint, Prettier, Black, Ruff, golangci-lint, Clippy, and many more
+- **Automatic setup** — No need to install or configure individual tools
+- **Hold-the-line** — Only show errors on lines you changed, not the entire codebase
+- **Git-aware** — Understands your Git history to only lint changed files
+- **IDE integration** — VSCode extension for real-time linting
+- **CI integration** — Run the same checks locally and in CI
+
+## Quick Start
+
+### Install
+
+```bash
+curl https://get.trunk.io -fsSL | bash
+```
+
+### Initialize
+
+```bash
+trunk init
+```
+
+This creates a `.trunk/trunk.yaml` configuration file and enables recommended linters for your project.
+
+### Run
+
+```bash
+# Check all changed files
+trunk check
+
+# Check specific files
+trunk check path/to/file.ts
+
+# Auto-fix issues
+trunk fmt
+```
+
+## Supported Languages
+
+Go, TypeScript, JavaScript, Python, Rust, Java, Kotlin, Swift, Ruby, C/C++, Solidity, Terraform, Dockerfile, YAML, JSON, Markdown, and many more.

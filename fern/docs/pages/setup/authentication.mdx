@@ -1,0 +1,36 @@
+---
+title: API Authentication
+subtitle: Authenticate with the Trunk API
+slug: setup/authentication
+---
+
+All Trunk API requests require authentication using an API token passed in the `x-api-token` header.
+
+## Getting Your API Token
+
+1. Sign in to [app.trunk.io](https://app.trunk.io)
+2. Navigate to **Settings** in your organization
+3. Find the **API Token** section
+4. Copy your token
+
+## Using the Token
+
+Include the token in the `x-api-token` header of every API request:
+
+```bash
+curl -X POST https://api.trunk.io/v1/flaky-tests/list-quarantined-tests \
+  -H "Content-Type: application/json" \
+  -H "x-api-token: YOUR_API_TOKEN" \
+  -d '{ ... }'
+```
+
+## Security Best Practices
+
+- **Never commit tokens** — Store API tokens in environment variables or secrets managers
+- **Rotate regularly** — Regenerate your API token periodically
+- **Limit access** — Only share the token with services that need it
+- **Use CI secrets** — Store the token as a CI secret (e.g., GitHub Actions secret, GitLab CI variable)
+
+<Warning>
+If you believe your API token has been compromised, regenerate it immediately in the Trunk App settings.
+</Warning>

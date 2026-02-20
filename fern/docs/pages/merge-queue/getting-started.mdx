@@ -1,0 +1,81 @@
+---
+title: Getting Started
+subtitle: Set up Merge Queue in minutes
+slug: merge-queue/getting-started
+---
+
+## Prerequisites
+
+- A GitHub repository
+- The [Trunk GitHub App](https://github.com/apps/trunk-io) installed on your organization
+- A Trunk account at [app.trunk.io](https://app.trunk.io)
+
+## Step 1: Connect Your Repository
+
+1. Go to [app.trunk.io](https://app.trunk.io) and sign in
+2. Select your organization
+3. Click **Add Repository** and select the repository you want to enable Merge Queue for
+
+## Step 2: Enable Merge Queue
+
+1. Navigate to **Merge Queue** in the left sidebar
+2. Click **Enable** for your repository
+3. Select your target branch (typically `main` or `master`)
+
+## Step 3: Configure CI
+
+Ensure your CI pipeline runs on the merge queue branches created by Trunk. These branches follow the pattern `trunk-merge/*`.
+
+Add this to your GitHub Actions workflow:
+
+```yaml
+on:
+  push:
+    branches:
+      - main
+      - trunk-merge/**
+  pull_request:
+    branches:
+      - main
+```
+
+## Step 4: Submit PRs to the Queue
+
+You can submit PRs to the merge queue in several ways:
+
+### Via GitHub Comment
+
+Add a comment on your PR:
+
+```
+/trunk merge
+```
+
+### Via the API
+
+```bash
+curl -X POST https://api.trunk.io/v1/submitPullRequest \
+  -H "Content-Type: application/json" \
+  -H "x-api-token: YOUR_API_TOKEN" \
+  -d '{
+    "repo": {
+      "host": "github.com",
+      "owner": "your-org",
+      "name": "your-repo"
+    },
+    "pr": { "number": 42 },
+    "targetBranch": "main"
+  }'
+```
+
+### Via the CLI
+
+```bash
+trunk merge submit --pr 42
+```
+
+## Next Steps
+
+- [Configure parallel queues](/merge-queue/overview) with impacted targets
+- [Set up Slack notifications](/merge-queue/slack-integration)
+- [Configure webhooks](/merge-queue/webhooks) for custom integrations

@@ -1,0 +1,39 @@
+---
+title: Trunk GitHub App
+subtitle: Connect Trunk to your GitHub repositories
+slug: setup/github-app
+---
+
+The Trunk GitHub App provides deep integration with GitHub for merge queue management, flaky test detection, and PR comments.
+
+## Installation
+
+1. Go to [github.com/apps/trunk-io](https://github.com/apps/trunk-io)
+2. Click **Install**
+3. Select the organization and repositories to grant access to
+4. Authorize the app
+
+## Permissions
+
+The Trunk GitHub App requests the following permissions:
+
+| Permission | Access | Purpose |
+|------------|--------|---------|
+| Pull requests | Read & Write | Manage merge queue PRs, post PR comments |
+| Contents | Read & Write | Create merge branches, read repository content |
+| Checks | Read & Write | Report test results and merge queue status |
+| Metadata | Read | Access repository metadata |
+| Webhooks | Read & Write | Receive GitHub events |
+
+## Managing the App
+
+### Adding Repositories
+
+1. Go to your GitHub organization settings
+2. Navigate to **Installed GitHub Apps** > **Trunk**
+3. Click **Configure**
+4. Select additional repositories
+
+### Removing Repositories
+
+Follow the same steps above and deselect repositories you want to remove.

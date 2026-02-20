@@ -1,0 +1,58 @@
+---
+title: Quarantining
+subtitle: Prevent flaky tests from blocking your pipeline
+slug: flaky-tests/quarantining
+---
+
+Quarantining allows you to isolate unreliable tests so they don't block pull requests, while still running them to collect data for diagnosis and tracking.
+
+## How Quarantining Works
+
+When a test is quarantined:
+
+1. The test still runs in CI as normal
+2. If the quarantined test fails, it is **not** counted as a failure for the overall test suite
+3. The test result is still uploaded to Trunk for tracking
+4. Once the test is fixed and marked healthy, it is automatically unquarantined (if using Auto Quarantine)
+
+## Quarantine Settings
+
+### Auto Quarantine
+
+When enabled, tests detected as flaky are automatically quarantined. When the test becomes healthy again, it is automatically unquarantined.
+
+### Always Quarantine
+
+Manually set a test to always be quarantined, regardless of its health status. Useful for tests that are known to be unreliable and will take time to fix.
+
+## Managing Quarantined Tests
+
+### Via the Dashboard
+
+1. Navigate to **Flaky Tests** in the Trunk App
+2. View all quarantined tests in the **Quarantined** tab
+3. Click on a test to see its failure history and details
+4. Manually quarantine or unquarantine tests as needed
+
+### Via the API
+
+Use the [List Quarantined Tests](/api-reference/flaky-tests/list-quarantined-tests) endpoint to programmatically retrieve all quarantined tests:
+
+```bash
+curl -X POST https://api.trunk.io/v1/flaky-tests/list-quarantined-tests \
+  -H "Content-Type: application/json" \
+  -H "x-api-token: YOUR_API_TOKEN" \
+  -d '{
+    "repo": {
+      "host": "github.com",
+      "owner": "your-org",
+      "name": "your-repo"
+    },
+    "org_url_slug": "your-org",
+    "page_query": { "page_size": 25 }
+  }'
+```
+
+## CI Integration
+
+To enable quarantining in your CI pipeline, update your test runner configuration to check the quarantine list before failing the build. See the [Quarantine Service Availability](/flaky-tests/overview) docs for details on supported CI providers.

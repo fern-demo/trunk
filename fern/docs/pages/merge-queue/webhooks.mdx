@@ -1,0 +1,60 @@
+---
+title: Webhooks
+subtitle: React to merge queue events in real time
+slug: merge-queue/webhooks
+---
+
+Trunk uses [Svix](https://www.svix.com/) for reliable webhook delivery. You can subscribe to events to build custom integrations and automation.
+
+## Webhook Events
+
+### Pull Request Events
+
+| Event | Description |
+|-------|-------------|
+| `pull_request.submitted` | A PR was submitted to the merge queue |
+| `pull_request.queued` | A PR entered the testing queue |
+| `pull_request.testing` | Tests started running for the PR |
+| `pull_request.merged` | The PR was successfully merged |
+| `pull_request.failed` | Tests failed for the PR |
+| `pull_request.canceled` | The PR was removed from the queue |
+
+### Batch Events
+
+| Event | Description |
+|-------|-------------|
+| `pull_request_batch.merged` | A batch of PRs was merged together |
+
+## Setting Up Webhooks
+
+1. Navigate to your repository settings in the [Trunk App](https://app.trunk.io)
+2. Go to **Settings** > **Webhooks**
+3. Click **Add Endpoint**
+4. Enter your webhook URL and select the events you want to receive
+
+## Webhook Payload
+
+All webhook payloads include:
+
+```json
+{
+  "type": "pull_request.merged",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "repo": {
+      "host": "github.com",
+      "owner": "your-org",
+      "name": "your-repo"
+    },
+    "pr": {
+      "number": 42,
+      "title": "Add new feature"
+    },
+    "targetBranch": "main"
+  }
+}
+```
+
+## Verifying Webhook Signatures
+
+Trunk signs all webhook payloads using Svix. Verify signatures to ensure the webhook came from Trunk. See the [Svix verification docs](https://docs.svix.com/receiving/verifying-payloads/how) for implementation details.

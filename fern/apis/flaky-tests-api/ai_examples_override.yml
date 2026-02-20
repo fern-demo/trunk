@@ -1,0 +1,169 @@
+paths:
+  /flaky-tests/list-quarantined-tests:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: acme-corp
+              name: payment-service
+            org_url_slug: acme-corp
+            page_query:
+              page_size: 25
+          response:
+            body:
+              quarantined_tests:
+                - name: testProcessPaymentWithValidCard
+                  parent: PaymentProcessorTests
+                  file: tests/payment_processor_test.py
+                  classname: PaymentProcessorTests
+                  status: FLAKY
+                  codeowners:
+                    - '@jdoe'
+                    - '@asmith'
+                  quarantine_setting: AUTO_QUARANTINE
+                  quarantined_at: '2024-04-10T14:22:00Z'
+                  status_last_updated_at: '2024-04-15T10:00:00Z'
+                  test_case_id: testcase-12345
+                  variant: python3.9-linux
+              page:
+                total_rows: 1
+                total_pages: 1
+                next_page_token: ''
+                prev_page_token: ''
+                last_page_token: ''
+                page_index: 0
+  /flaky-tests/list-unhealthy-tests:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: acme-corp
+              name: payment-service
+            org_url_slug: acme-corp
+            page_query:
+              page_size: 25
+            status: FLAKY
+          response:
+            body:
+              tests:
+                - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  repository:
+                    html_url: https://github.com/acme-corp/payment-service
+                  html_url: https://trunk.io/tests/3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  name: TestProcessPayment
+                  variant: linux-python3.8
+                  status:
+                    value: flaky
+                    reason: Intermittent timeout errors on CI
+                    timestamp: '2024-04-20T14:22:00Z'
+                  file_path: tests/payment/test_process_payment.py
+                  parent: PaymentProcessingSuite
+                  classname: TestProcessPayment
+                  codeowners:
+                    - '@payment-team'
+                    - '@backend-leads'
+                  pull_requests_impacted_last_7d: 3
+                  quarantined: false
+                  ticket:
+                    html_url: https://jira.acme-corp.com/browse/QA-1234
+              page:
+                total_rows: 42
+                total_pages: 2
+                next_page_token: eyJwYWdlIjoxfQ==
+                prev_page_token: ''
+                last_page_token: eyJwYWdlIjoyfQ==
+                page_index: 0
+  /flaky-tests/get-test-details:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: acme-corp
+              name: payment-service
+            org_url_slug: acme-corp
+            test_id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+          response:
+            body:
+              test:
+                id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                repository:
+                  html_url: https://github.com/acme-corp/payment-service
+                html_url: https://app.trunk.io/acme-corp/payment-service/tests/3fa85f64-5717-4562-b3fc-2c963f66afa6
+                name: TestProcessPayment
+                variant: linux-python3.9
+                status:
+                  value: flaky
+                  reason: Intermittent timeout errors on CI
+                  timestamp: '2024-04-20T14:22:00Z'
+                most_common_failures:
+                  - summary: 'TimeoutError: Payment gateway did not respond'
+                    occurrence_count: 12
+                    last_occurrence: '2024-04-25T10:15:00Z'
+                  - summary: 'AssertionError: Expected status code 200 but got 500'
+                    occurrence_count: 5
+                    last_occurrence: '2024-04-24T16:40:00Z'
+                failure_rate_last_7d: 0.35
+                file_path: tests/payment/test_process_payment.py
+                parent: PaymentTests
+                classname: TestProcessPayment
+                codeowners:
+                  - '@payment-team'
+                  - '@backend-leads'
+                pull_requests_impacted_last_7d: 3
+                quarantined: false
+                ticket:
+                  html_url: https://jira.acme-corp.com/browse/QA-1234
+  /flaky-tests/list-failing-tests:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: example-org
+              name: example-repo
+            org_url_slug: example-org
+            start_time: '2024-04-20T08:00:00Z'
+            end_time: '2024-04-27T08:00:00Z'
+            page_query:
+              page_size: 25
+          response:
+            body:
+              tests:
+                - id: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  repository:
+                    html_url: https://github.com/example-org/example-repo
+                  html_url: https://trunk.io/tests/3fa85f64-5717-4562-b3fc-2c963f66afa6
+                  name: testUserLogin
+                  variant: python3.9-django3.2
+                  status:
+                    value: flaky
+                    reason: Intermittent timeout errors
+                    timestamp: '2024-04-26T15:45:00Z'
+                  most_common_failures:
+                    - summary: 'TimeoutError: Test exceeded time limit'
+                      occurrence_count: 12
+                      last_occurrence: '2024-04-26T15:30:00Z'
+                    - summary: 'AssertionError: Expected status code 200 but got 500'
+                      occurrence_count: 5
+                      last_occurrence: '2024-04-25T11:20:00Z'
+                  failure_rate_last_7d: 0.48
+                  file_path: tests/integration/test_user_auth.py
+                  parent: UserAuthTests
+                  classname: TestUserLogin
+                  codeowners:
+                    - '@backend-team'
+                    - '@qa-lead'
+                  pull_requests_impacted_last_7d: 3
+                  quarantined: false
+                  ticket:
+                    html_url: https://jira.example.com/browse/QA-1234
+              page:
+                total_rows: 1
+                total_pages: 1
+                next_page_token: ''
+                prev_page_token: ''
+                last_page_token: ''
+                page_index: 0

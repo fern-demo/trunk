@@ -1,0 +1,99 @@
+paths:
+  /updateQueue:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: openai
+              name: trunk-merge-queue
+            targetBranch: main
+          response:
+            body:
+              name: main-queue
+              branch: main
+              state: RUNNING
+              size: 5
+              concurrency: 3
+  /createQueue:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: trunkio
+              name: trunk-merge-queue
+            targetBranch: main
+          response:
+            body:
+              name: trunk-merge-queue-main
+              branch: main
+              state: RUNNING
+              size: 3
+              concurrency: 2
+  /getQueue:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: trunkio
+              name: trunk-merge-queue
+            targetBranch: main
+          response:
+            body:
+              name: Main Branch Merge Queue
+              branch: main
+              state: RUNNING
+              size: 5
+              concurrency: 3
+  /getTestingDetails:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: trunkio
+              name: merge-queue
+            pr:
+              number: 128
+            targetBranch: main
+          response:
+            body:
+              status: running
+              testRuns:
+                - name: Unit Tests
+                  status: passed
+                  url: https://ci.github.com/trunkio/merge-queue/runs/123456789
+                - name: Integration Tests
+                  status: running
+                  url: https://ci.github.com/trunkio/merge-queue/runs/123456790
+  /getSubmittedPullRequest:
+    post:
+      x-fern-examples:
+        - request:
+            repo:
+              host: github.com
+              owner: openai
+              name: trunk-merge-queue
+            pr:
+              number: 128
+            targetBranch: main
+          response:
+            body:
+              id: a3f5c9d2-7b4e-4f1a-9c3e-2d8b6f7a9e12
+              state: TESTING
+              readiness:
+                isReady: false
+                unmetConditions:
+                  - All required status checks must pass
+                  - No merge conflicts
+              stateChangedAt: '2024-04-20T14:45:00Z'
+              priorityValue: 2.5
+              priorityName: High
+              usedDefaultPriorityName: Normal
+              skipTheLine: false
+              isCurrentlySubmittedToQueue: true
+              prNumber: 128
+              prTitle: Add support for multi-branch merge queues
+              qName: main-queue

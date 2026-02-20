@@ -1,0 +1,128 @@
+instances:
+  - url: trunk.docs.buildwithfern.com
+
+title: Trunk | Docs
+
+tabs:
+  merge-queue:
+    display-name: Merge Queue
+    icon: fa-solid fa-code-merge
+    slug: merge-queue
+  flaky-tests:
+    display-name: Flaky Tests
+    icon: fa-solid fa-flask-vial
+    slug: flaky-tests
+  ci-autopilot:
+    display-name: CI Autopilot
+    icon: fa-solid fa-rocket
+    slug: ci-autopilot
+  code-quality:
+    display-name: Code Quality
+    icon: fa-solid fa-terminal
+    slug: code-quality
+  api-reference:
+    display-name: API Reference
+    icon: fa-solid fa-code
+    slug: api-reference
+  setup:
+    display-name: Setup & Admin
+    icon: fa-solid fa-gear
+    slug: setup
+
+navigation:
+  - tab: merge-queue
+    layout:
+      - section: Getting Started
+        contents:
+          - page: Overview
+            path: docs/pages/merge-queue/overview.mdx
+          - page: Getting Started
+            path: docs/pages/merge-queue/getting-started.mdx
+      - section: Integrations
+        contents:
+          - page: Slack Integration
+            path: docs/pages/merge-queue/slack-integration.mdx
+          - page: Webhooks
+            path: docs/pages/merge-queue/webhooks.mdx
+
+  - tab: flaky-tests
+    layout:
+      - section: Getting Started
+        contents:
+          - page: Overview
+            path: docs/pages/flaky-tests/overview.mdx
+          - page: Getting Started
+            path: docs/pages/flaky-tests/getting-started.mdx
+      - section: Features
+        contents:
+          - page: Quarantining
+            path: docs/pages/flaky-tests/quarantining.mdx
+          - page: Ticketing Integrations
+            path: docs/pages/flaky-tests/ticketing-integrations.mdx
+          - page: Webhooks
+            path: docs/pages/flaky-tests/webhooks.mdx
+
+  - tab: ci-autopilot
+    layout:
+      - section: CI Autopilot
+        contents:
+          - page: Overview
+            path: docs/pages/ci-autopilot/overview.mdx
+
+  - tab: code-quality
+    layout:
+      - section: Code Quality
+        contents:
+          - page: Overview
+            path: docs/pages/code-quality/overview.mdx
+
+  - tab: api-reference
+    layout:
+      - section: Overview
+        contents:
+          - page: Authentication
+            path: docs/pages/setup/authentication.mdx
+      - api: Merge Queue API
+        api-name: merge-queue-api
+        skip-slug: true
+      - api: Flaky Tests API
+        api-name: flaky-tests-api
+        skip-slug: true
+
+  - tab: setup
+    layout:
+      - section: Setup & Administration
+        contents:
+          - page: GitHub App
+            path: docs/pages/setup/github-app.mdx
+          - page: Authentication
+            path: docs/pages/setup/authentication.mdx
+          - page: Security
+            path: docs/pages/setup/security.mdx
+
+navbar-links:
+  - type: secondary
+    text: Sign Up
+    url: https://app.trunk.io
+  - type: primary
+    text: Dashboard
+    url: https://app.trunk.io
+
+colors:
+  accentPrimary:
+    dark: "#4FDE6E"
+    light: "#1C8435"
+  background:
+    dark: "#0D1117"
+    light: "#FFFFFF"
+
+logo:
+  dark: docs/assets/trunk-logo-dark.svg
+  light: docs/assets/trunk-logo.svg
+  height: 28
+
+favicon: docs/assets/favicon.svg
+
+layout:
+  page-width: full
+  tabs-placement: header

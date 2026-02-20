@@ -1,0 +1,624 @@
+openapi: 3.1.0
+info:
+  title: Trunk Flaky Tests API
+  version: "1.0"
+  description: |
+    The Trunk Flaky Tests API allows you to programmatically access information about
+    flaky, broken, and quarantined tests in your repositories. All requests require
+    authentication via the `x-api-token` header.
+
+servers:
+  - url: https://api.trunk.io/v1
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-token
+      description: Your Trunk API token. Find it at https://app.trunk.io under Settings.
+
+  schemas:
+    Repo:
+      type: object
+      required:
+        - host
+        - owner
+        - name
+      properties:
+        host:
+          type: string
+          description: "The host of the repository (e.g., `github.com`, `gitlab.com`, or self-hosted hostname)"
+          example: "github.com"
+        owner:
+          type: string
+          description: "The owner of the repository (e.g., `my-github-org` or for GitLab: `my-gitlab-org/my/sub/group`)"
+          example: "my-org"
+        name:
+          type: string
+          description: "The name of the repository"
+          example: "my-repo"
+
+    PageQuery:
+      type: object
+      required:
+        - page_size
+      properties:
+        page_size:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: The number of items to return per page
+          example: 25
+        page_token:
+          type: string
+          description: The page token for pagination. Leave empty for the first page.
+
+    PageInfo:
+      type: object
+      required:
+        - total_rows
+        - total_pages
+        - next_page_token
+        - prev_page_token
+        - last_page_token
+        - page_index
+      properties:
+        total_rows:
+          type: number
+          minimum: 0
+          description: Total number of results
+        total_pages:
+          type: number
+          minimum: 0
+          description: Total number of pages
+        next_page_token:
+          type: string
+          description: Token for the next page
+        prev_page_token:
+          type: string
+          description: Token for the previous page
+        last_page_token:
+          type: string
+          description: Token for the last page
+        page_index:
+          type: number
+          minimum: 0
+          description: Current page index (zero-based)
+
+    TestStatus:
+      type: object
+      required:
+        - value
+        - reason
+        - timestamp
+      properties:
+        value:
+          type: string
+          enum:
+            - healthy
+            - flaky
+            - broken
+          description: The current test health status
+        reason:
+          type: string
+          description: The reason for the current status
+        timestamp:
+          type: string
+          format: date-time
+          description: When the status was last changed
+
+    FailureSummary:
+      type: object
+      required:
+        - summary
+        - occurrence_count
+      properties:
+        summary:
+          type: string
+          description: Summary of the failure
+        occurrence_count:
+          type: integer
+          minimum: 0
+          description: Number of times this failure occurred
+        last_occurrence:
+          type: string
+          format: date-time
+          description: When this failure last occurred
+
+    Ticket:
+      type: object
+      required:
+        - html_url
+      properties:
+        html_url:
+          type: string
+          format: uri
+          description: URL of the linked ticket
+
+    TestCase:
+      type: object
+      required:
+        - id
+        - repository
+        - html_url
+        - name
+        - variant
+        - status
+        - most_common_failures
+        - failure_rate_last_7d
+        - codeowners
+        - pull_requests_impacted_last_7d
+        - quarantined
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: A stable unique identifier for the test
+        repository:
+          type: object
+          required:
+            - html_url
+          properties:
+            html_url:
+              type: string
+              format: uri
+              description: URL of the repository
+        html_url:
+          type: string
+          format: uri
+          description: URL of the test details page
+        name:
+          type: string
+          description: The name of the test
+        variant:
+          type: string
+          description: The test variant name
+        status:
+          $ref: "#/components/schemas/TestStatus"
+        most_common_failures:
+          type: array
+          items:
+            $ref: "#/components/schemas/FailureSummary"
+          description: Most common failure modes (feature flag required)
+        failure_rate_last_7d:
+          type: number
+          description: Failure rate over the last 7 days (0.0 - 1.0)
+        file_path:
+          type: string
+          description: File path where the test is defined
+        parent:
+          type: string
+          description: The parent test suite
+        classname:
+          type: string
+          description: The class name of the test
+        codeowners:
+          type: array
+          items:
+            type: string
+          description: CODEOWNERS entries for the test file
+        pull_requests_impacted_last_7d:
+          type: integer
+          minimum: 0
+          description: Number of pull requests impacted by this test in the last 7 days
+        quarantined:
+          type: boolean
+          description: Whether the test is currently quarantined
+        ticket:
+          $ref: "#/components/schemas/Ticket"
+
+    UnhealthyTest:
+      type: object
+      required:
+        - id
+        - repository
+        - html_url
+        - name
+        - variant
+        - status
+        - codeowners
+        - pull_requests_impacted_last_7d
+        - quarantined
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: A stable unique identifier for the test
+        repository:
+          type: object
+          required:
+            - html_url
+          properties:
+            html_url:
+              type: string
+              format: uri
+              description: URL of the repository
+        html_url:
+          type: string
+          format: uri
+          description: URL of the test details page
+        name:
+          type: string
+          description: The name of the test
+        variant:
+          type: string
+          description: The test variant name
+        status:
+          $ref: "#/components/schemas/TestStatus"
+        file_path:
+          type: string
+          description: File path where the test is defined
+        parent:
+          type: string
+          description: The parent test suite
+        classname:
+          type: string
+          description: The class name of the test
+        codeowners:
+          type: array
+          items:
+            type: string
+          description: CODEOWNERS entries for the test file
+        pull_requests_impacted_last_7d:
+          type: integer
+          minimum: 0
+          description: Number of pull requests impacted in the last 7 days
+        quarantined:
+          type: boolean
+          description: Whether the test is currently quarantined
+        ticket:
+          $ref: "#/components/schemas/Ticket"
+
+    QuarantinedTest:
+      type: object
+      required:
+        - name
+        - parent
+        - file
+        - classname
+        - status
+        - codeowners
+        - quarantine_setting
+        - quarantined_at
+        - status_last_updated_at
+        - test_case_id
+        - variant
+      properties:
+        name:
+          type: string
+          description: The name of the test case
+        parent:
+          type:
+            - string
+            - "null"
+          description: The parent test suite
+        file:
+          type:
+            - string
+            - "null"
+          description: The file path of the test case
+        classname:
+          type:
+            - string
+            - "null"
+          description: The class name of the test case
+        status:
+          type: string
+          enum:
+            - HEALTHY
+            - FLAKY
+            - BROKEN
+          description: Current status of the test
+        codeowners:
+          type: array
+          items:
+            type: string
+          description: Latest CODEOWNERS entries
+        quarantine_setting:
+          type: string
+          enum:
+            - ALWAYS_QUARANTINE
+            - AUTO_QUARANTINE
+          description: The quarantine behavior setting
+        quarantined_at:
+          type: string
+          format: date-time
+          description: When the test was quarantined
+        status_last_updated_at:
+          type: string
+          format: date-time
+          description: When the status was last updated
+        test_case_id:
+          type: string
+          description: The ID of the test case (unstable — do not rely on this for long-term use)
+        variant:
+          type: string
+          description: The variant of the test case
+
+    UnhealthyTestStatusFilter:
+      type: string
+      enum:
+        - FLAKY
+        - BROKEN
+      description: Filter for unhealthy test status
+
+paths:
+  /flaky-tests/get-test-details:
+    post:
+      operationId: getTestDetails
+      summary: Get test details
+      description: Get the full details of a specific test case, including its health status, failure history, and linked tickets.
+      tags:
+        - Tests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - org_url_slug
+                - test_id
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                org_url_slug:
+                  type: string
+                  description: "The slug of your organization. Find it at https://app.trunk.io/trunk/settings"
+                  example: "my-org"
+                test_id:
+                  type: string
+                  format: uuid
+                  description: The UUID of the test case
+      responses:
+        "200":
+          description: Successfully retrieved test details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - test
+                properties:
+                  test:
+                    $ref: "#/components/schemas/TestCase"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /flaky-tests/link-ticket-to-test-case:
+    post:
+      operationId: linkTicketToTestCase
+      summary: Link ticket to test case
+      description: |
+        Link a Jira or Linear ticket to a test case. For Jira, use the ticket number
+        prefixed by the Project Key (e.g., `PROJ-123`). For Linear, use the ticket
+        number prefixed by the Team Identifier (e.g., `TEAM-456`).
+      tags:
+        - Tests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - test_case_id
+                - external_ticket_id
+                - repo
+              properties:
+                test_case_id:
+                  type: string
+                  format: uuid
+                  description: The UUID of the test case
+                external_ticket_id:
+                  type: string
+                  description: "The external ticket identifier (e.g., `PROJ-123` for Jira or `TEAM-456` for Linear)"
+                  example: "PROJ-123"
+                repo:
+                  $ref: "#/components/schemas/Repo"
+      responses:
+        "200":
+          description: Ticket successfully linked
+          content:
+            application/json:
+              schema:
+                type: object
+        "400":
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Test case not found
+          content:
+            text/plain:
+              schema:
+                type: string
+        "500":
+          description: Internal server error
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /flaky-tests/list-failing-tests:
+    post:
+      operationId: listFailingTests
+      summary: List failing tests
+      description: Get a paginated list of distinct tests that failed in the given time range. The time range must be within 7 days.
+      tags:
+        - Tests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - org_url_slug
+                - start_time
+                - end_time
+                - page_query
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                org_url_slug:
+                  type: string
+                  description: "The slug of your organization"
+                  example: "my-org"
+                start_time:
+                  type: string
+                  format: date-time
+                  description: "Start of the time range (inclusive). Must be within 7 days of `end_time`."
+                end_time:
+                  type: string
+                  format: date-time
+                  description: "End of the time range (exclusive). Must be within 7 days of `start_time`."
+                page_query:
+                  $ref: "#/components/schemas/PageQuery"
+      responses:
+        "200":
+          description: Successfully retrieved failing tests
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - tests
+                  - page
+                properties:
+                  tests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/TestCase"
+                    description: A page of failing test cases
+                  page:
+                    $ref: "#/components/schemas/PageInfo"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /flaky-tests/list-unhealthy-tests:
+    post:
+      operationId: listUnhealthyTests
+      summary: List unhealthy tests
+      description: Get a paginated list of unhealthy tests, filtered by either FLAKY or BROKEN status.
+      tags:
+        - Tests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - org_url_slug
+                - page_query
+                - status
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                org_url_slug:
+                  type: string
+                  description: "The slug of your organization"
+                  example: "my-org"
+                page_query:
+                  $ref: "#/components/schemas/PageQuery"
+                status:
+                  $ref: "#/components/schemas/UnhealthyTestStatusFilter"
+      responses:
+        "200":
+          description: Successfully retrieved unhealthy tests
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - tests
+                  - page
+                properties:
+                  tests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UnhealthyTest"
+                    description: A page of unhealthy test cases
+                  page:
+                    $ref: "#/components/schemas/PageInfo"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /flaky-tests/list-quarantined-tests:
+    post:
+      operationId: listQuarantinedTests
+      summary: List quarantined tests
+      description: Get a paginated list of tests that are currently quarantined in the repository.
+      tags:
+        - Tests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - org_url_slug
+                - page_query
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                org_url_slug:
+                  type: string
+                  description: "The slug of your organization"
+                  example: "my-org"
+                page_query:
+                  $ref: "#/components/schemas/PageQuery"
+      responses:
+        "200":
+          description: Successfully retrieved quarantined tests
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - quarantined_tests
+                  - page
+                properties:
+                  quarantined_tests:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/QuarantinedTest"
+                    description: A page of quarantined test cases
+                  page:
+                    $ref: "#/components/schemas/PageInfo"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string

@@ -1,0 +1,67 @@
+---
+title: Getting Started
+subtitle: Start detecting flaky tests in minutes
+slug: flaky-tests/getting-started
+---
+
+## Prerequisites
+
+- A CI pipeline that produces JUnit XML test results
+- The [Trunk GitHub App](https://github.com/apps/trunk-io) installed (for GitHub repositories)
+- A Trunk account at [app.trunk.io](https://app.trunk.io)
+
+## Step 1: Install the Trunk Analytics CLI
+
+Add the Trunk Analytics CLI to your CI pipeline:
+
+```bash
+curl -fsSL https://trunk.io/releases/analytics-cli/latest | bash
+```
+
+## Step 2: Upload Test Results
+
+After your test suite runs, upload the JUnit XML results to Trunk:
+
+```bash
+trunk-analytics-cli upload \
+  --token $TRUNK_API_TOKEN \
+  --org-url-slug your-org \
+  --repo your-org/your-repo \
+  path/to/test-results/*.xml
+```
+
+### GitHub Actions Example
+
+```yaml
+- name: Run Tests
+  run: npm test -- --reporter=junit --outputFile=test-results/results.xml
+
+- name: Upload Test Results
+  if: always()
+  run: |
+    curl -fsSL https://trunk.io/releases/analytics-cli/latest | bash
+    trunk-analytics-cli upload \
+      --token ${{ secrets.TRUNK_API_TOKEN }} \
+      --org-url-slug your-org \
+      --repo ${{ github.repository }} \
+      test-results/*.xml
+```
+
+## Step 3: View Results
+
+Once you've uploaded test results from a few CI runs, Trunk will begin detecting flaky tests. View them in the [Trunk App](https://app.trunk.io) under **Flaky Tests**.
+
+## Step 4: Enable Quarantining
+
+1. Navigate to **Flaky Tests** > **Settings** in the Trunk App
+2. Enable **Auto Quarantine** to automatically quarantine tests detected as flaky
+3. Configure your quarantine behavior:
+   - **Auto Quarantine** — Automatically quarantine when a test is detected as flaky
+   - **Always Quarantine** — Keep a specific test permanently quarantined
+
+## Next Steps
+
+- [Manage detected flaky tests](/flaky-tests/overview) in the dashboard
+- [Set up ticketing integrations](/flaky-tests/ticketing-integrations) with Jira or Linear
+- [Configure webhooks](/flaky-tests/webhooks) for custom notifications
+- Use the [Flaky Tests API](/api-reference/flaky-tests) to programmatically access test data

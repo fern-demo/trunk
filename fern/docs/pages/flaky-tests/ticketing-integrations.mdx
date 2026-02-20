@@ -1,0 +1,54 @@
+---
+title: Ticketing Integrations
+subtitle: Track flaky test fixes with Jira and Linear
+slug: flaky-tests/ticketing-integrations
+---
+
+Link flaky tests to tickets in Jira or Linear to track remediation efforts and assign ownership.
+
+## Supported Platforms
+
+- **Jira** — Link tests to Jira issues using the project key and ticket number (e.g., `PROJ-123`)
+- **Linear** — Link tests to Linear issues using the team identifier and ticket number (e.g., `TEAM-456`)
+
+## Setting Up Integrations
+
+### Jira
+
+1. Navigate to your organization settings in the [Trunk App](https://app.trunk.io)
+2. Go to **Integrations** > **Jira**
+3. Connect your Jira instance by providing your Jira site URL
+4. Authorize Trunk to access your Jira projects
+
+### Linear
+
+1. Navigate to your organization settings in the [Trunk App](https://app.trunk.io)
+2. Go to **Integrations** > **Linear**
+3. Click **Connect to Linear** and authorize the integration
+
+## Linking Tickets to Tests
+
+### Via the Dashboard
+
+1. Navigate to a flaky test in the Trunk App
+2. Click **Link Ticket**
+3. Enter the ticket identifier (e.g., `PROJ-123`)
+
+### Via the API
+
+Use the [Link Ticket to Test Case](/api-reference/flaky-tests/link-ticket-to-test-case) endpoint:
+
+```bash
+curl -X POST https://api.trunk.io/v1/flaky-tests/link-ticket-to-test-case \
+  -H "Content-Type: application/json" \
+  -H "x-api-token: YOUR_API_TOKEN" \
+  -d '{
+    "test_case_id": "test-uuid-here",
+    "external_ticket_id": "PROJ-123",
+    "repo": {
+      "host": "github.com",
+      "owner": "your-org",
+      "name": "your-repo"
+    }
+  }'
+```

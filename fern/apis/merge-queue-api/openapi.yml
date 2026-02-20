@@ -1,0 +1,697 @@
+openapi: 3.1.0
+info:
+  title: Trunk Merge Queue API
+  version: "1.0"
+  description: |
+    The Trunk Merge Queue API allows you to programmatically manage merge queues
+    and pull requests. All requests require authentication via the `x-api-token` header.
+
+servers:
+  - url: https://api.trunk.io/v1
+
+security:
+  - ApiKeyAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-token
+      description: Your Trunk API token. Find it at https://app.trunk.io under Settings.
+
+  schemas:
+    Repo:
+      type: object
+      required:
+        - host
+        - owner
+        - name
+      properties:
+        host:
+          type: string
+          description: "The host of the repository (e.g., `github.com`)"
+          example: "github.com"
+        owner:
+          type: string
+          description: "The owner of the repository (e.g., `my-github-org`)"
+          example: "my-org"
+        name:
+          type: string
+          description: "The name of the repository"
+          example: "my-repo"
+
+    PullRequest:
+      type: object
+      required:
+        - number
+      properties:
+        number:
+          type: integer
+          description: The pull request number
+          example: 42
+
+    QueueState:
+      type: string
+      enum:
+        - RUNNING
+        - PAUSED
+        - DRAINING
+      description: The state of the merge queue
+
+    PullRequestState:
+      type: string
+      enum:
+        - NOT_READY
+        - PENDING
+        - TESTING
+        - TESTS_PASSED
+        - MERGED
+        - FAILED
+        - CANCELLED
+        - PENDING_FAILURE
+      description: The current state of the pull request in the merge queue
+
+    Readiness:
+      type: object
+      properties:
+        isReady:
+          type: boolean
+          description: Whether the PR is ready to be merged
+        unmetConditions:
+          type: array
+          items:
+            type: string
+          description: List of unmet conditions preventing the PR from being ready
+
+    SubmittedPullRequest:
+      type: object
+      required:
+        - stateChangedAt
+        - priorityValue
+        - priorityName
+        - skipTheLine
+        - isCurrentlySubmittedToQueue
+        - prNumber
+        - prTitle
+        - qName
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the submitted pull request
+        state:
+          $ref: "#/components/schemas/PullRequestState"
+        readiness:
+          $ref: "#/components/schemas/Readiness"
+        stateChangedAt:
+          type: string
+          format: date-time
+          description: Timestamp when the state last changed
+        priorityValue:
+          type: number
+          description: The numeric priority value
+        priorityName:
+          type: string
+          description: The name of the priority level
+        usedDefaultPriorityName:
+          type: string
+          description: The default priority name used, if applicable
+        skipTheLine:
+          type: boolean
+          description: Whether the PR is set to skip the line
+        isCurrentlySubmittedToQueue:
+          type: boolean
+          description: Whether the PR is currently in the queue
+        prNumber:
+          type: integer
+          description: The pull request number
+        prTitle:
+          type: string
+          description: The pull request title
+        qName:
+          type: string
+          description: The name of the queue
+
+    TestingDetails:
+      type: object
+      properties:
+        status:
+          type: string
+          description: The current testing status
+        testRuns:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                description: The name of the test run
+              status:
+                type: string
+                description: The status of the test run
+              url:
+                type: string
+                format: uri
+                description: Link to the test run
+
+    Queue:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the queue
+        branch:
+          type: string
+          description: The target branch for the queue
+        state:
+          $ref: "#/components/schemas/QueueState"
+        size:
+          type: integer
+          description: Number of PRs currently in the queue
+        concurrency:
+          type: integer
+          description: The concurrency level of the queue
+
+    ImpactedTarget:
+      type: object
+      required:
+        - label
+      properties:
+        label:
+          type: string
+          description: The label of the impacted target
+        path:
+          type: string
+          description: The file path of the impacted target
+
+paths:
+  /cancelPullRequest:
+    post:
+      operationId: cancelPullRequest
+      summary: Cancel pull request
+      description: Cancel a pull request that is currently in a merge queue.
+      tags:
+        - Pull Requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - pr
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                pr:
+                  $ref: "#/components/schemas/PullRequest"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue
+                  example: "main"
+      responses:
+        "200":
+          description: Pull request successfully cancelled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Pull request not found
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /getSubmittedPullRequest:
+    post:
+      operationId: getSubmittedPullRequest
+      summary: Get submitted pull request
+      description: Get a submitted pull request from a merge queue, including its current state, priority, and readiness information.
+      tags:
+        - Pull Requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - pr
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                pr:
+                  $ref: "#/components/schemas/PullRequest"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue
+                  example: "main"
+      responses:
+        "200":
+          description: Successfully retrieved pull request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubmittedPullRequest"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Pull request not found
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /restartPullRequest:
+    post:
+      operationId: restartPullRequest
+      summary: Restart pull request tests
+      description: Restart tests on a pull request that is currently in a merge queue.
+      tags:
+        - Pull Requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - pr
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                pr:
+                  $ref: "#/components/schemas/PullRequest"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue
+                  example: "main"
+      responses:
+        "200":
+          description: Tests successfully restarted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Pull request not found
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /setImpactedTargets:
+    post:
+      operationId: setImpactedTargets
+      summary: Set impacted targets
+      description: Set impacted targets for a pull request. Used with parallel merge queues to determine which PRs can be tested and merged concurrently.
+      tags:
+        - Pull Requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - pr
+                - targetBranch
+                - impactedTargets
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                pr:
+                  $ref: "#/components/schemas/PullRequest"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue
+                  example: "main"
+                impactedTargets:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/ImpactedTarget"
+                  description: The list of impacted targets for the pull request
+      responses:
+        "200":
+          description: Impacted targets successfully set
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /submitPullRequest:
+    post:
+      operationId: submitPullRequest
+      summary: Submit pull request
+      description: Submit a pull request to a merge queue for automated testing and merging.
+      tags:
+        - Pull Requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - pr
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                pr:
+                  $ref: "#/components/schemas/PullRequest"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue
+                  example: "main"
+                priorityName:
+                  type: string
+                  description: The priority level name for the pull request
+                skipTheLine:
+                  type: boolean
+                  description: Whether the PR should skip the line in the queue
+                  default: false
+      responses:
+        "200":
+          description: Pull request successfully submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  id:
+                    type: string
+        "400":
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /getTestingDetails:
+    post:
+      operationId: getTestingDetails
+      summary: Get testing details
+      description: Get details about the testing that Merge Queue is performing on a pull request.
+      tags:
+        - Pull Requests
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - pr
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                pr:
+                  $ref: "#/components/schemas/PullRequest"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue
+                  example: "main"
+      responses:
+        "200":
+          description: Successfully retrieved testing details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestingDetails"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Pull request not found
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /createQueue:
+    post:
+      operationId: createQueue
+      summary: Create merge queue
+      description: Create a new merge queue for a repository and branch.
+      tags:
+        - Queues
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                targetBranch:
+                  type: string
+                  description: The target branch for the merge queue
+                  example: "main"
+                concurrency:
+                  type: integer
+                  description: The concurrency level for the queue
+                  default: 1
+      responses:
+        "200":
+          description: Queue successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Queue"
+        "400":
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /deleteQueue:
+    post:
+      operationId: deleteQueue
+      summary: Delete merge queue
+      description: Delete the specified merge queue. The queue must be empty before it can be deleted.
+      tags:
+        - Queues
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue to delete
+                  example: "main"
+      responses:
+        "200":
+          description: Queue successfully deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "400":
+          description: Bad request — queue is not empty
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Queue not found
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /getQueue:
+    post:
+      operationId: getQueue
+      summary: Get merge queue
+      description: Get the details and current state of a merge queue.
+      tags:
+        - Queues
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue
+                  example: "main"
+      responses:
+        "200":
+          description: Successfully retrieved queue
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Queue"
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Queue not found
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /updateQueue:
+    post:
+      operationId: updateQueue
+      summary: Update merge queue
+      description: Update the settings or state of a merge queue, such as pausing or resuming it.
+      tags:
+        - Queues
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - repo
+                - targetBranch
+              properties:
+                repo:
+                  $ref: "#/components/schemas/Repo"
+                targetBranch:
+                  type: string
+                  description: The target branch of the merge queue
+                  example: "main"
+                state:
+                  $ref: "#/components/schemas/QueueState"
+                concurrency:
+                  type: integer
+                  description: The updated concurrency level for the queue
+      responses:
+        "200":
+          description: Queue successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Queue"
+        "400":
+          description: Bad request
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Unauthorized
+          content:
+            text/plain:
+              schema:
+                type: string
+        "404":
+          description: Queue not found
+          content:
+            text/plain:
+              schema:
+                type: string

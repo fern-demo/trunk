@@ -1,0 +1,47 @@
+---
+title: Flaky Tests Overview
+subtitle: Detect and quarantine unreliable tests automatically
+slug: flaky-tests/overview
+---
+
+Trunk Flaky Tests automatically detects unreliable tests in your CI pipelines and quarantines them so they don't block pull requests or waste developer time.
+
+## How It Works
+
+1. **Upload test results** — Configure your CI to upload JUnit XML test results to Trunk
+2. **Automatic detection** — Trunk analyzes test results across runs to identify flaky and broken tests
+3. **Quarantine** — Unreliable tests are automatically quarantined so they don't block PRs
+4. **Track and fix** — Use the dashboard to monitor test health and prioritize fixes
+
+## Key Features
+
+- **Automatic detection** — Identifies flaky and broken tests by analyzing patterns across CI runs
+- **Smart quarantining** — Quarantine flaky tests so they don't block PRs, while still running them for data collection
+- **Infrastructure failure protection** — Distinguishes between test failures and infrastructure issues
+- **PR comments** — Get automatic PR comments with test failure details
+- **Ticketing integrations** — Link flaky tests to Jira or Linear tickets for tracking
+- **Webhooks** — Build custom integrations triggered by test status changes
+- **REST API** — Programmatically query test data and manage quarantine settings
+
+## Supported Test Frameworks
+
+Trunk supports 25+ test frameworks including:
+
+- **JavaScript/TypeScript** — Jest, Vitest, Cypress, Playwright, Mocha
+- **Python** — Pytest, unittest
+- **Java/Kotlin** — JUnit, TestNG, Espresso
+- **Go** — `go test`
+- **Ruby** — RSpec, Minitest
+- **Swift** — XCTest
+- **Rust** — `cargo test`
+- **C/C++** — GoogleTest, Catch2
+
+## Supported CI Providers
+
+- GitHub Actions
+- GitLab CI
+- Jenkins
+- BuildKite
+- CircleCI
+- Azure DevOps
+- Any CI provider that can run shell commands

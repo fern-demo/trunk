@@ -1,0 +1,47 @@
+---
+title: Webhooks
+subtitle: React to test status changes in real time
+slug: flaky-tests/webhooks
+---
+
+Receive webhook notifications when test statuses change, quarantine settings are updated, or other flaky test events occur.
+
+## Webhook Events
+
+### Test Events
+
+| Event | Description |
+|-------|-------------|
+| `test.status_changed` | A test's health status changed (e.g., healthy to flaky) |
+| `test.quarantining_setting_changed` | A test's quarantine setting was updated |
+
+## Setting Up Webhooks
+
+1. Navigate to your repository settings in the [Trunk App](https://app.trunk.io)
+2. Go to **Settings** > **Webhooks**
+3. Click **Add Endpoint**
+4. Enter your webhook URL and select the events you want to receive
+
+## Payload Format
+
+```json
+{
+  "type": "test.status_changed",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "repo": {
+      "host": "github.com",
+      "owner": "your-org",
+      "name": "your-repo"
+    },
+    "test": {
+      "name": "test_user_login",
+      "file_path": "tests/auth/test_login.py",
+      "previous_status": "healthy",
+      "new_status": "flaky"
+    }
+  }
+}
+```
+
+Trunk uses [Svix](https://www.svix.com/) for reliable webhook delivery. Verify webhook signatures using the [Svix verification docs](https://docs.svix.com/receiving/verifying-payloads/how).
